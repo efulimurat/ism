@@ -1,0 +1,57 @@
+{% extends "layouts/app.html.twig" %}
+
+{% block content %}
+    <div class="right_col" role="main">
+        <div class="">
+            <div class="row top_tiles">
+                <div class="animated flipInY col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="tile-stats">
+                        <div class="icon"><i class="fa fa-caret-square-o-right"></i></div>
+                        <div class="count">{{ totalIssues }}</div>
+                        <h3>Total Issues</h3>
+                    </div>
+                </div>
+                <div class="animated flipInY col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="tile-stats">
+                        <div class="icon"><i class="fa fa-comments-o"></i></div>
+                        <div class="count">{{ openIssues }}</div>
+                        <h3>Open Issues</h3>
+                    </div>
+                </div>
+                <div class="animated flipInY col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="tile-stats">
+                        <div class="icon"><i class="fa fa-sort-amount-desc"></i></div>
+                        <div class="count">{{ closedIssues}}</div>
+                        <h3>Closed Issues</h3>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="x_panel">
+                        <div class="x_title">
+                            <h2>Open Issues <small>Oldest</small></h2>
+
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content">
+                            {% for issue in oldestIssues %}
+                                <article class="media event">
+                                   
+                                    <div class="media-body">
+                                        <a class="title" href="{{ path('issue.edit',{'issue_id': issue.issue_id})}}">{{ issue.title }} | {{issue.created_at.date|date('d/m/Y H:i:s')}}</a>
+                                        <p>{{ issue.content|slice(0,50) }}</p>
+                                    </div>
+                                </article>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

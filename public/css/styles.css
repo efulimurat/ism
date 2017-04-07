@@ -1,0 +1,40 @@
+.logo{
+    font-family: 'bauhaus';
+    font-size: 26px;
+    text-align: center;
+    margin-bottom: 3mm;
+    margin-top: 15px;
+    display:block;
+    color:#fff;
+}
+
+.logo a:hover{ color:#fff}
+
+.salesSumToolbar {
+    font-size: 16px;
+    font-weight: bold;
+    font-style: italic;
+}
+
+ul.stats-overview li { width: 24% !important}
+
+td.details-control {
+    background: url('/images/details_open.png') no-repeat center center;
+    cursor: pointer;
+}
+tr.shown td.details-control {
+    background: url('/images/details_close.png') no-repeat center center;
+}
+
+.calendar-text { margin-top: .3em; }
+
+@media (max-width: 768px) { 
+    .dataTables_filter{ 
+        width: 100%;
+    } 
+    .dt-buttons a.btn {
+        width: 85px;
+        font-size: 12px;
+        padding: 5px;
+    }
+}

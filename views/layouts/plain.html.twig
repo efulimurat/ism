@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <!-- Meta, title, CSS, favicons, etc. -->
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% if title is defined %} title " | Issue Management" {% else %}  Issue Management {% endif %}</title>
+
+    <link href="{{ app.web_path}}/css/vendor.min.css?v={{ app.version }}" rel="stylesheet"/>
+    <link href="{{ app.web_path}}/css/custom.min.css?v={{ app.version }}" rel="stylesheet"/>
+    <link href="{{ app.web_path}}/css/styles.min.css?v={{ app.version }}" rel="stylesheet"/>
+
+    <script src="{{ app.web_path}}/js/sm.js"></script> 
+
+    <script>
+var siteUrl = "{{ app.app_url }}";
+
+    </script>
+</head>
+
+<body class="nav-md {% if body_class is defined %}{{body_class}}{% endif %}">
+<div class="container body">
+    <div class="main_container">
+        <!-- page content -->
+        {% block content %}{% endblock %}
+        <!-- /page content -->
+
+    </div>
+</div>
+
+{% include 'layouts/scripts.html.twig' %}
+
+</body>
+</html>

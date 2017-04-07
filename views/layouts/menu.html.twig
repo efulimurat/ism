@@ -1,0 +1,41 @@
+<div class="left_col scroll-view">
+    <div class="navbar nav_title" style="border: 0;">
+        <a href="{{ path('homepage') }}" class="text-center logo opened">issue management</a>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <!-- menu profile quick info -->
+    <div class="profile clearfix">
+        <div class="profile_pic text-center">
+            <i class="fa fa-user fa-3x img-circle profile_img"></i>
+        </div>
+        <div class="profile_info">
+            <span>Hoşgeldiniz,</span>
+            <h2>asd</h2>
+        </div>
+    </div>
+    <!-- /menu profile quick info -->
+
+    <br />
+
+    <!-- sidebar menu -->
+    <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+        <div class="menu_section">
+            <h3>MENÜ</h3>
+            <ul class="nav side-menu">
+
+                <li><a href="{{ path('homepage') }}"><i class="fa fa-home"></i> Home</a></li>
+                <li><a><i class="fa fa-edit"></i> Issue <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                        <li><a href="{{ path('issue.list') }}">List Issues</a></li>
+                        <li><a href="{{ path('issue.add') }}">Add Issue</a></li>
+
+                    </ul>
+                </li>
+
+            </ul>
+        </div>
+
+    </div>   
+</div>
