@@ -8,9 +8,9 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Doctrine\ORM\Tools\Pagination\Paginator;
 use App\Entity\Issue;
 use App\Models\IssueModel;
+use App\Repository\IssueRepository;
 
 class IssueController extends BaseController {
 
@@ -33,8 +33,11 @@ class IssueController extends BaseController {
 
     public function edit($issue_id) {
 
-        $issueRepository = $this->app["em"]->getRepository('App\Entity\Issue');
-        $issue = $issueRepository->find($issue_id);
+        $Issue = new IssueRepository();
+        $Issue->cacheKey = "getIssue" . $issue_id;
+        $Issue->cacheTimeout = 30;
+        $issue = $Issue->getIssue($issue_id);
+
         if (!$issue) {
             return $this->app->abort(404);
         }
@@ -43,7 +46,7 @@ class IssueController extends BaseController {
         if ($this->checkFormFor("update", $form, $issue)) {
             return $this->redirect("issue.list");
         }
-        
+
         return $this->app['twig']->render('issue/edit.html.twig', array('status' => $issue->getStatus(), 'form' => $form->createView()));
     }
 
@@ -76,47 +79,30 @@ class IssueController extends BaseController {
         if (!in_array($orderDir, ["asc", "desc"])) {
             $orderDir = "asc";
         }
+        $Issue = new IssueRepository();
+        $Issue->cacheKey = "IssuesListLimited";
+        $Issue->cacheTimeout = 30;
 
-        $response = $this->getListDataQuery($start, $length, [$orderBy, $orderDir]);
+        $response = $Issue->getListLimited($start, $length, [$orderBy, $orderDir]);
 
         return $this->app->json($response);
     }
 
-    private function getListDataQuery($start, $length, $order) {
-
-        $query = $this->app["em"]->createQueryBuilder()->select("i")
-                ->from("App\Entity\Issue", "i")
-                ->orderBy("i." . $order[0], $order[1])
-                ->setMaxResults($length)
-                ->setFirstResult($start);
-        ;
-        $paginator = new Paginator($query, $fetchJoinCollection = true);
-        $countResults = count($paginator);
-
-        $Data = $query->getQuery()->getArrayResult();
-
-        $issueModel = new IssueModel();
-
-        $response['recordsTotal'] = $countResults;
-        $response['recordsFiltered'] = $countResults;
-        $response['data'] = aliases($issueModel, $Data);
-
-        return $response;
-    }
-    
     public function updateIssueStatus() {
         $id = (int) $this->request->request->get("id");
         if (!$id) {
             return $this->app->abort(404);
         }
 
-        $issueRepository = $this->app["em"]->getRepository('App\Entity\Issue');
-        $issue = $issueRepository->find($id);
+        $Issue = new IssueRepository();
+        $Issue->cacheKey = "getIssue" . $id;
+        $Issue->cacheTimeout = 30;
+        $issue = $Issue->getIssue($id);
+
         if ($issue->getStatus() == 1) {
             $issue->setStatus(0);
             $issue->setUpdatedAt();
         }
-        $this->app["em"]->flush();
         return $this->app->json(["result" => "success"]);
     }
 
@@ -155,9 +141,8 @@ class IssueController extends BaseController {
                     }
                 }
             }
-
-            $this->app["em"]->persist($issue);
-            $this->app["em"]->flush();
+            $Issue = new IssueRepository();
+            return $Issue->saveIssue($issue);
 
             return true;
         }

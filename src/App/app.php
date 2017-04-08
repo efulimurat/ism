@@ -13,12 +13,14 @@ use Silex\Provider\FormServiceProvider;
 use Silex\Provider\LocaleServiceProvider;
 use Silex\Provider\TranslationServiceProvider;
 use Silex\Provider\DoctrineServiceProvider;
-use Doctrine\ORM\EntityManager;
+use Mvc\CacheComponent;
 use Doctrine\ORM\Tools\Setup;
+use Mvc\DataQuery;
 
 class app {
 
     public static function init() {
+        global $params;
         $app = new Application();
         $app["debug"] = true;
         $app->register(new ServiceControllerServiceProvider());
@@ -40,20 +42,23 @@ class app {
         });
 
         $app->register(new DoctrineServiceProvider(), array(
-            'db.options' => array(
-                'driver' => 'pdo_mysql',
-                'host' => '127.0.0.1',
-                'dbname' => 'ism_0617',
-                'user' => 'root',
-                'password' => '616161',
-                'charset' => 'utf8mb4',
-            ),
+            'db.options' => $params["db"],
         ));
         $config = Setup::createAnnotationMetadataConfiguration(array(__DIR__ . "/src"), false);
-        $app["em"] = EntityManager::create($app["db"], $config);
+//        $app["em"] = EntityManager::create($app["db"]);
+//        
+        DataQuery::createEM($app["db"], $config);
+
+        //Redis Conf
+        CacheComponent::setConf([
+            'scheme' => 'tcp',
+            'host' => '127.0.0.1',
+            'port' => 6379
+        ]);
 
         $request = new \Symfony\Component\HttpFoundation\Request;
 
+        //Controllers
         $app['controller.main'] = function ($request) use ($app) {
             return new \App\Controllers\MainController($request['request_stack']->getCurrentRequest(), $app);
         };

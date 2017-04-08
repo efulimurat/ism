@@ -14,11 +14,14 @@
         "symfony/validator": "^3.2",
         "symfony/config": "^3.2",
         "doctrine/dbal": "~2.2",
-        "doctrine/orm": "^2.5"
+        "doctrine/orm": "^2.5",
+        "symfony/cache": "^3.2",
+        "predis/predis": "^1.1"
     },
     "autoload": {
         "psr-0": {
-            "App": "src/"
+            "App": "src/",
+            "Mvc": "src/"
         }
     }
 }
