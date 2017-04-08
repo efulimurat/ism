@@ -65,6 +65,10 @@ class app {
         $app['controller.issue'] = function ($request) use ($app) {
             return new \App\Controllers\IssueController($request['request_stack']->getCurrentRequest(), $app);
         };
+       
+        $app['controller.tag'] = function ($request) use ($app) {
+            return new \App\Controllers\TagController($request['request_stack']->getCurrentRequest(), $app);
+        };
 
         $app->get('/', 'controller.main:dashboard')->bind("homepage");
         $app->get('/issues/', 'controller.issue:getList')->bind('issue.list');
@@ -72,6 +76,8 @@ class app {
         $app->post('/issues/updateStatus', 'controller.issue:updateIssueStatus')->bind('issue.update.status');
         $app->match('/add_issue/', 'controller.issue:add')->bind('issue.add');
         $app->match('/edit_issue/{issue_id}', 'controller.issue:edit')->assert('issue_id', '\d+')->bind('issue.edit');
+        $app->get('/tags/{tag_id}', 'controller.tag:getListById')->assert('tag_id', '\d+')->bind('tag.search');
+        $app->get('/tags/ajax{tag_id}', 'controller.tag:getListByIdData')->assert('tag_id', '\d+')->bind('tag.ajax.url');
 
 
         $app['version'] = 2;

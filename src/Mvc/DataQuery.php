@@ -5,7 +5,6 @@ namespace Mvc;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Mvc\CacheComponent;
-use Doctrine\ORM\Query\ResultSetMapping;
 
 class DataQuery {
 
@@ -68,8 +67,16 @@ class DataQuery {
         $em = self::getEM();
         $this->initQuery();
 
-        $rsm = new ResultSetMapping();
-        $this->query = $em->createNativeQuery($sql, $rsm);
+        $this->query = $em->getConnection()->query($sql);
+
+        return $this;
+    }
+    
+    protected function foundRows() {
+        $em = self::getEM();
+        $this->initQuery();
+
+        $this->query = $em->getConnection()->query("SELECT FOUND_ROWS() as total_count");
 
         return $this;
     }
@@ -175,7 +182,7 @@ class DataQuery {
         } else {
             $query = $this->query;
             if ($rawQuery == true) {
-                $data = $query->getResult();
+                $data = $query->fetchAll();
             } else {
                 $data = $query->getQuery()->getArrayResult();
             }

@@ -89,7 +89,7 @@ class IssueRepository extends DataQuery {
     private function deleteIssueTags($issue_id, $entity) {
 
         $deleteTagToIssue = $this->deleteRecord("TagToIssue")
-                ->whereIssueId($issue_id)->executeQuery();
+                        ->whereIssueId($issue_id)->executeQuery();
 
         if ($deleteTagToIssue) {
             return true;
@@ -123,17 +123,47 @@ class IssueRepository extends DataQuery {
 
         return $Data;
     }
-    
-    public function getIssuesByTagsMost() {
-        
-        $sql = 'SELECT * from ism_tag as tags '
-                . 'INNER JOIN (SELECT count(tag_id) as count,tag_id FROM `ism_tag_to_issue` group by tag_id HAVING count > 0 order by count DESC LIMIT 10) as ti ON ti.tag_id = tags.tag_id';
-        $query = $this->createRawQuery($sql);
 
-        $Data = $query->rawResults(false);
-print_r($Data);exit;
-        return $Data;
+    public function getIssuesByTagsMost() {
+
+
+        $sql = 'SELECT ti.count, tags.tag_id,tags.tag from ism_tag as tags '
+                . ' INNER JOIN (SELECT count(t.tag_id) as count,t.tag_id,t.issue_id FROM `ism_tag_to_issue` t '
+                . '  INNER JOIN ism_issue as i ON t.issue_id = i.issue_id AND i.status = 1'
+                . ' group by tag_id HAVING count > 0 order by count DESC LIMIT 10) as ti ON ti.tag_id = tags.tag_id'
+        ;
+
+        $query = $this->createRawQuery($sql);
+        $data = $query->rawResults(false);
+
+        return $data;
     }
-    
+
+    public function getListByTagId($tag_id, $start, $length, $order) {
+
+        $orderBy = $order[0];
+        $orderDir = $order[1];
+
+        $sql = 'SELECT SQL_CALC_FOUND_ROWS i.title,i.issue_id,i.created_at, i.updated_at,i.status from ism_issue as i '
+                . ' INNER JOIN ism_tag_to_issue as ti ON ti.issue_id = i.issue_id AND ti.tag_id = ' . $tag_id
+                . ' WHERE i.status = 1'
+                . ' ORDER BY ' . $orderBy . " " . $orderDir . " LIMIT " . $start . "," . $length;
+
+        $query = $this->createRawQuery($sql);
+        $data = $query->rawResults(false);
+        $totalCount = $this->foundRows()->rawResults(false);
+        $issueModel = new IssueModel();
+
+        foreach ($data as $k => $v) {
+            $data[$k]["created_at"] = date_create($v["created_at"]);
+            $data[$k]["updated_at"] = date_create($v["updated_at"]);
+            
+        }
+        $response['recordsTotal'] = $totalCount[0]["total_count"];
+        $response['recordsFiltered'] = $totalCount[0]["total_count"];
+        $response['data'] = aliases($issueModel, $data);
+
+        return $response;
+    }
 
 }

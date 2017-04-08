@@ -17,6 +17,8 @@ class MainController extends BaseController {
 
     public function dashboard() {
 
+        //User id bağımsız, tüm kayıtları çekiyor.
+
         $Issue = new IssueRepository();
 
         $Issue->cacheKey = "IssuesOldest";
@@ -26,7 +28,7 @@ class MainController extends BaseController {
         $Issue->cacheKey = "openIssuesCount";
         $Issue->cacheTimeout = 120;
         $openIssues = $Issue->getIssuesByStatus(1);
-        
+
         $Issue->cacheKey = "allIssuesCount";
         $Issue->cacheTimeout = 120;
         $allIssues = $Issue->getIssuesByStatus();
@@ -35,14 +37,14 @@ class MainController extends BaseController {
         $totalIssues = count($allIssues);
         $openIssues = count($openIssues);
         $closedIssues = $totalIssues - $openIssues;
-        
+
         //En çok ıssue olan tag'ler
         $Issue->cacheKey = "mostTagIssues";
         $Issue->cacheTimeout = 120;
         $tagIssues = $Issue->getIssuesByTagsMost();
 
 
-        return $this->app['twig']->render('main/dashboard.html.twig', ['openIssues' => $openIssues, "totalIssues" => $totalIssues, "closedIssues" => $closedIssues, "oldestIssues" => $oldestIssues]);
+        return $this->app['twig']->render('main/dashboard.html.twig', ['openIssues' => $openIssues, "totalIssues" => $totalIssues, "closedIssues" => $closedIssues, "oldestIssues" => $oldestIssues, "tags" => $tagIssues]);
     }
 
 }
