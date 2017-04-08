@@ -22,7 +22,7 @@ class IssueController extends BaseController {
 
         $issue = new Issue();
 
-        $form = $this->getForm($this->app['form.factory'], $issue);
+        $form = $this->getForm($issue);
 
         if ($this->checkFormFor("save", $form, $issue)) {
             return $this->redirect("issue.list");
@@ -36,18 +36,18 @@ class IssueController extends BaseController {
         $Issue = new IssueRepository();
         $Issue->cacheKey = "getIssue" . $issue_id;
         $Issue->cacheTimeout = 30;
-        $issue = $Issue->getIssue($issue_id);
+        $getIssue = $Issue->getIssue($issue_id);
 
-        if (!$issue) {
+        if (!$getIssue) {
             return $this->app->abort(404);
         }
-        $form = $this->getForm($this->app['form.factory'], $issue, "update");
+        $form = $this->getForm($getIssue, "update");
 
-        if ($this->checkFormFor("update", $form, $issue)) {
+        if ($this->checkFormFor("update", $form, $getIssue)) {
             return $this->redirect("issue.list");
         }
 
-        return $this->app['twig']->render('issue/edit.html.twig', array('status' => $issue->getStatus(), 'form' => $form->createView()));
+        return $this->app['twig']->render('issue/edit.html.twig', array('status' => $getIssue->getStatus(), 'form' => $form->createView()));
     }
 
     public function getList() {
@@ -79,9 +79,11 @@ class IssueController extends BaseController {
         if (!in_array($orderDir, ["asc", "desc"])) {
             $orderDir = "asc";
         }
+
+        //Todo: Yeni bir kayıt eklendiğinde ilgili cache'in temizlenmesi gerekir..
         $Issue = new IssueRepository();
         $Issue->cacheKey = "IssuesListLimited";
-        $Issue->cacheTimeout = 30;
+        $Issue->cacheTimeout = 0;
 
         $response = $Issue->getListLimited($start, $length, [$orderBy, $orderDir]);
 
@@ -102,11 +104,14 @@ class IssueController extends BaseController {
         if ($issue->getStatus() == 1) {
             $issue->setStatus(0);
             $issue->setUpdatedAt();
+            $Issue->updateIssue($issue);
+            return $this->app->json(["result" => "success"]);
         }
-        return $this->app->json(["result" => "success"]);
+        return $this->app->json(["result" => "fail"]);
     }
 
-    private function getForm($formProvider, $issue, $act = null) {
+    private function getForm($issue, $act = null) {
+        $formProvider = $this->app['form.factory'];
         $formBuilder = $formProvider->createBuilder(FormType::class, $issue)
                 ->add('title')
                 ->add('content', TextareaType::class, ["attr" => ["rows" => 5]])
@@ -125,11 +130,13 @@ class IssueController extends BaseController {
     private function checkFormFor($action, $form, $issue) {
         $form->handleRequest($this->request);
         if ($form->isSubmitted() && $form->isValid()) {
+            $Issue = new IssueRepository();
             if ($action == "save") {
-                $issue->setUserId(61);
+                $issue->setUserId($this->user_id);
                 $issue->setStatus(1);
                 $issue->setCreatedAt();
                 $issue->setUpdatedAt();
+                $Issue->saveIssue($issue);
             } elseif ($action == "update") {
                 //Kapanmış ise, tekrar açamasın
                 if ($issue->getStatus() == false) {
@@ -140,9 +147,8 @@ class IssueController extends BaseController {
                         $issue->setUpdatedAt();
                     }
                 }
+                $Issue->updateIssue($issue);
             }
-            $Issue = new IssueRepository();
-            return $Issue->saveIssue($issue);
 
             return true;
         }

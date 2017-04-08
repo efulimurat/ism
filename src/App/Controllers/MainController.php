@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use App\Entity\Issue;
 use App\Models\IssueModel;
+use App\Repository\IssueRepository;
 
 class MainController extends BaseController {
 
@@ -15,39 +16,33 @@ class MainController extends BaseController {
     }
 
     public function dashboard() {
-        //Issue Sayıları
-        $totalIssues = $this->getCountIssuesQuery();
-        $openIssues = $this->getCountIssuesQuery(0);
-        $closedIssues = $totalIssues - $openIssues;
 
-        //En eski ve açık kalan issue lar
-        $oldestIssues = $this->getOldestIssues();
+        $Issue = new IssueRepository();
+
+        $Issue->cacheKey = "IssuesOldest";
+        $Issue->cacheTimeout = 120;
+        $oldestIssues = $Issue->getOldestIssues();
+
+        $Issue->cacheKey = "openIssuesCount";
+        $Issue->cacheTimeout = 120;
+        $openIssues = $Issue->getIssuesByStatus(1);
+        
+        $Issue->cacheKey = "allIssuesCount";
+        $Issue->cacheTimeout = 120;
+        $allIssues = $Issue->getIssuesByStatus();
+
+        //Issue Sayıları
+        $totalIssues = count($allIssues);
+        $openIssues = count($openIssues);
+        $closedIssues = $totalIssues - $openIssues;
+        
+        //En çok ıssue olan tag'ler
+        $Issue->cacheKey = "mostTagIssues";
+        $Issue->cacheTimeout = 120;
+        $tagIssues = $Issue->getIssuesByTagsMost();
+
 
         return $this->app['twig']->render('main/dashboard.html.twig', ['openIssues' => $openIssues, "totalIssues" => $totalIssues, "closedIssues" => $closedIssues, "oldestIssues" => $oldestIssues]);
-    }
-
-    private function getCountIssuesQuery($status = null) {
-        $query = $this->app["em"]->createQueryBuilder()->select("i")
-                ->from("App\Entity\Issue", "i");
-
-        if (!is_null($status)) {
-            $query = $query->where("i.status = " . $status);
-        }
-
-        $countResults = count($query->getQuery()->getArrayResult());
-
-        return $countResults;
-    }
-
-    private function getOldestIssues($limit = 5) {
-        $query = $this->app["em"]->createQueryBuilder()->select("i")
-                ->from("App\Entity\Issue", "i")
-                ->orderBy("i.created_at", "asc")
-                ->where("i.status = 1");
-
-        $Data = $query->getQuery()->getArrayResult();
-
-        return $Data;
     }
 
 }

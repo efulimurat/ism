@@ -11,7 +11,7 @@ class Issue
     /** @Id @Column(type="integer") @GeneratedValue **/
     protected $issue_id;
     
-    /** @Column(type="string") **/
+    /** @Column(type="integer") **/
     protected $user_id;
     
     /** @Column(type="string") **/

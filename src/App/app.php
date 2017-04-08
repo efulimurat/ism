@@ -22,6 +22,7 @@ class app {
     public static function init() {
         global $params;
         $app = new Application();
+        
         $app["debug"] = true;
         $app->register(new ServiceControllerServiceProvider());
         $app->register(new AssetServiceProvider());
@@ -45,8 +46,7 @@ class app {
             'db.options' => $params["db"],
         ));
         $config = Setup::createAnnotationMetadataConfiguration(array(__DIR__ . "/src"), false);
-//        $app["em"] = EntityManager::create($app["db"]);
-//        
+
         DataQuery::createEM($app["db"], $config);
 
         //Redis Conf
