@@ -58,31 +58,31 @@ class IssueRepository extends DataQuery {
         //Kullanıcının girdiği tag'leri explode ediyor
         if ($tags) {
             $q_tags = explode(',', $tags);
-        }
 
-        //Girilen tag'ler tag tablomuzda var mı, bakıyor ve tag index i ile yeni bir dizi oluşturuyor..
-        $tagsRecords = $this->createQuery("Tag")->whereIn("tag", $q_tags)->getResultSet(false);
-        $tagsRecordsIndexed = [];
-        foreach ($tagsRecords as $index => $record) {
-            $tagsRecordsIndexed[$record["tag"]] = $record;
-        }
-
-        //Kullanıcının girdiği etiketler daha önceden eklenmemişse tag tablosuna ekliyor ve relation tablosuna da tüm tagler için kayıt atıyor.
-        foreach ($q_tags as $tag) {
-            if (isset($tagsRecordsIndexed[$tag])) {
-                $tag_id = $tagsRecordsIndexed[$tag]["tag_id"];
-            } else {
-                $tagEntity = new Tag();
-                $tagEntity->setTag($tag);
-                $saveTag = $this->createInsert($tagEntity);
-                $tag_id = $saveTag->getTagId();
+            //Girilen tag'ler tag tablomuzda var mı, bakıyor ve tag index i ile yeni bir dizi oluşturuyor..
+            $tagsRecords = $this->createQuery("Tag")->whereIn("tag", $q_tags)->getResultSet(false);
+            $tagsRecordsIndexed = [];
+            foreach ($tagsRecords as $index => $record) {
+                $tagsRecordsIndexed[$record["tag"]] = $record;
             }
 
-            $tagToIssueEntity = new TagToIssue();
-            $tagToIssueEntity->setTagId($tag_id);
-            $tagToIssueEntity->setIssueId($issue_id);
+            //Kullanıcının girdiği etiketler daha önceden eklenmemişse tag tablosuna ekliyor ve relation tablosuna da tüm tagler için kayıt atıyor.
+            foreach ($q_tags as $tag) {
+                if (isset($tagsRecordsIndexed[$tag])) {
+                    $tag_id = $tagsRecordsIndexed[$tag]["tag_id"];
+                } else {
+                    $tagEntity = new Tag();
+                    $tagEntity->setTag($tag);
+                    $saveTag = $this->createInsert($tagEntity);
+                    $tag_id = $saveTag->getTagId();
+                }
 
-            $saveTagToIssue = $this->createInsert($tagToIssueEntity);
+                $tagToIssueEntity = new TagToIssue();
+                $tagToIssueEntity->setTagId($tag_id);
+                $tagToIssueEntity->setIssueId($issue_id);
+
+                $saveTagToIssue = $this->createInsert($tagToIssueEntity);
+            }
         }
     }
 
@@ -157,7 +157,6 @@ class IssueRepository extends DataQuery {
         foreach ($data as $k => $v) {
             $data[$k]["created_at"] = date_create($v["created_at"]);
             $data[$k]["updated_at"] = date_create($v["updated_at"]);
-            
         }
         $response['recordsTotal'] = $totalCount[0]["total_count"];
         $response['recordsFiltered'] = $totalCount[0]["total_count"];
