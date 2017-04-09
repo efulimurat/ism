@@ -80,7 +80,7 @@ class IssueController extends BaseController {
             $orderDir = "asc";
         }
 
-        //Todo: Yeni bir kayıt eklendiğinde ilgili cache'in temizlenmesi gerekir..
+        //Todo: Yeni bir kayıt eklendiğinde ilgili cache'in temizlenmesi gerekir.. Test aşamasında sıfırlıyorum...
         $Issue = new IssueRepository();
         $Issue->cacheKey = "IssuesListLimited";
         $Issue->cacheTimeout = 0;
